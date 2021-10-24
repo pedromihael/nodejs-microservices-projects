@@ -2,7 +2,7 @@ const ApiErrorFactory = require('../../../../../../shared/factories/ApiErrorFact
 
 const apiErrorFactory = ApiErrorFactory()
 
-function GetIncidentByIdUseCase(repository) {
+function GetProjectByIdUseCase(repository) {
   const execute = async id => {
     if (id) {
       const response = await repository.findById(id)
@@ -10,7 +10,7 @@ function GetIncidentByIdUseCase(repository) {
     } else {
       return apiErrorFactory.createError(
         'API Error',
-        'GetIncidentWithMissingId',
+        'GetProjectWithMissingId',
         400
       )
     }
@@ -19,4 +19,4 @@ function GetIncidentByIdUseCase(repository) {
   return { execute }
 }
 
-module.exports = GetIncidentByIdUseCase
+module.exports = GetProjectByIdUseCase
