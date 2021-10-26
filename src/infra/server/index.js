@@ -27,24 +27,28 @@ const run = async () => {
   });
   
   await consumer.connect()
+  await producer.connect()
   await consumer.subscribe({ topic: consumerTopic })
 
   await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`
-      console.log(`- ${prefix} ${message.key}#${message.value}`)
+    eachMessage: async ({ message }) => {
+      const payload = {key: `${message.key}`, value: `${message.value}`}
+      console.log('TEST', payload.key, payload.value)
 
-      const payload = message.value;
+      const project = payload.value.split("::")[0]
+      const severity = payload.value.split("::")[1]
 
-      console.log('payload', payload)
+      console.log('values', severity, project)
       
       // achar id do provedor pela mensagem recebida
       // usar mandar pro provedor
 
+      const provider = { id: 'provider_id' }
+
       producer.send({
         topic: producerTopic,
         messages: [
-          { value: { id: 'provider_id' } }
+          { value: JSON.stringify(provider) }
         ]
       })
     },

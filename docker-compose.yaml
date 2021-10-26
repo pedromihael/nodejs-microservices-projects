@@ -5,15 +5,14 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3002:3002"
+    network_mode: host
     command: sh -c "knex migrate:latest --knexfile src/infra/db/adapters/knex/knexfile.js && knex seed:run --knexfile src/infra/db/adapters/knex/knexfile.js && yarn start"
     environment:
       - POSTGRES_DB=ms_projects
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5435
+      - POSTGRES_HOST=localhost
       - NODE_ENV=development
       - PORT=3002
     deploy:
@@ -31,13 +30,14 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DATABASE=ms_projects
+      - POSTGRES_HOST=localhost
     user: postgres
     volumes:
       - database:/var/lib/postgresql/data
       - ./db:/docker-entrypoint-initdb.d/
-    ports:
-      - "5435:5432"
+    network_mode: host
     restart: always
+    command: -p 5435
     
 volumes:
   database:
