@@ -2,6 +2,8 @@ const express = require('express')
 const logger = require('morgan')
 const dotenv = require('dotenv')
 const cors = require('cors')
+const { consumer, topic: consumerTopic } = require('../../application/client/modules/project/infra/kafka/consumers')
+const { producer, topic: producerTopic } = require('../../application/client/modules/project/infra/kafka/producers')
 const routes = require('../../application/client/modules/project/infra/http/routes')
 
 dotenv.config()
@@ -19,6 +21,34 @@ app.get('/health-check', (req, res) => {
 
 app.use(routes)
 
-app.listen(process.env.PORT || 3002, () => {
-  console.log('Projects service is ready ✅');
-});
+const run = async () => {
+  app.listen(process.env.PORT || 3002, () => {
+    console.log('Projects service is ready ✅');
+  });
+  
+  await consumer.connect()
+  await consumer.subscribe({ topic: consumerTopic })
+
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`
+      console.log(`- ${prefix} ${message.key}#${message.value}`)
+
+      const payload = message.value;
+
+      console.log('payload', payload)
+      
+      // achar id do provedor pela mensagem recebida
+      // usar mandar pro provedor
+
+      producer.send({
+        topic: producerTopic,
+        messages: [
+          { value: { id: 'provider_id' } }
+        ]
+      })
+    },
+  })
+}
+
+run().catch(err => console.error(err))
