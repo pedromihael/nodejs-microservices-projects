@@ -4,6 +4,8 @@ const dotenv = require('dotenv')
 const cors = require('cors')
 const { consumer, topic: consumerTopic } = require('../../application/client/modules/project/infra/kafka/consumers')
 const { producer, topic: producerTopic } = require('../../application/client/modules/project/infra/kafka/producers')
+const { UpdateProjectReliability } = require('../../application/client/modules/project/infra/kafka/actions/UpdateProjectReliability')
+const { GetProjectProvider } = require('../../application/client/modules/project/infra/kafka/actions/GetProjectProvider')
 const routes = require('../../application/client/modules/project/infra/http/routes')
 
 dotenv.config()
@@ -39,16 +41,21 @@ const run = async () => {
       const severity = payload.value.split("::")[1]
 
       console.log('values', severity, project)
-      
-      // achar id do provedor pela mensagem recebida
-      // usar mandar pro provedor
 
-      const provider = { id: 'provider_id' }
+      const updateProjectReliability = UpdateProjectReliability()
+      const res = await updateProjectReliability.execute(project, severity)
 
-      producer.send({
+      if (res) {
+        console.log("new project reliability: ", res.newValue)
+      }
+
+      const getProjectProvider = GetProjectProvider()
+      const providerId = await getProjectProvider.execute(project)
+
+      await producer.send({
         topic: producerTopic,
         messages: [
-          { value: JSON.stringify(provider) }
+          { value: `${providerId}::${severity}` }
         ]
       })
     },
