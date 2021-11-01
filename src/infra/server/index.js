@@ -35,19 +35,12 @@ const run = async () => {
   await consumer.run({
     eachMessage: async ({ message }) => {
       const payload = {key: `${message.key}`, value: `${message.value}`}
-      console.log('TEST', payload.key, payload.value)
 
       const project = payload.value.split("::")[0]
       const severity = payload.value.split("::")[1]
 
-      console.log('values', severity, project)
-
       const updateProjectReliability = UpdateProjectReliability()
       const res = await updateProjectReliability.execute(project, severity)
-
-      if (res) {
-        console.log("new project reliability: ", res.newValue)
-      }
 
       const getProjectProvider = GetProjectProvider()
       const providerId = await getProjectProvider.execute(project)

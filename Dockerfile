@@ -6,13 +6,10 @@ WORKDIR /usr/app
 
 # Copiando o package json e yarn lock para poder instalar as dependencias
 COPY package.json ./
-COPY yarn.lock ./
-
+# Executando a instalação do query builder
+RUN npm install knex -g
 # Executando a instalação dos pacotes
 RUN yarn install
-
-# Executando a instalação do query builder
-RUN yarn global add knex
 
 # Copiando o restante dos arquivos
 COPY . .
